@@ -429,6 +429,14 @@ class Memory(MemoryBase):
             # Determine if this should use agent memory extraction based on agent_id presence
             # and role types in messages
             is_agent_memory = self._should_use_agent_memory_extraction(messages, metadata)
+
+            # EDIT #1: I'm seeing memories from the systemprompt which were recalled, seems very messy.
+            last_user_message = next(
+                (msg["content"] for msg in reversed(messages) if msg.get("role") == "user"),
+                None,
+            )
+            if last_user_message is not None:
+                parsed_messages = f"user: {last_user_message}\n"
             system_prompt, user_prompt = get_fact_retrieval_messages(parsed_messages, is_agent_memory)
 
         response = self.llm.generate_response(
